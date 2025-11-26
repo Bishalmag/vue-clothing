@@ -1,318 +1,294 @@
-<script setup>
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
-
-const isCollapsed = ref(false)
-const route = useRoute()
-
-const toggleSidebar = () => {
-  isCollapsed.value = !isCollapsed.value
-}
-
-// SVG Paths for icons (Standard SVG 24x24 viewbox)
-const icons = {
-  dashboard: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
-  products: "M12 2l10 6.5v7L12 22 2 15.5v-7L12 2z M12 22v-6.5",
-  inventory: "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z",
-  users: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M16 3.13a4 4 0 0 1 0 7.75",
-  orders: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z M3 6h18 M16 10a4 4 0 0 1-8 0",
-  settings: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.18-.08a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l-.08.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.18.08a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l.08-.18a2 2 0 0 0-2-2z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
-  chevronLeft: "M15 18l-6-6 6-6",
-  chevronRight: "M9 18l6-6-6-6",
-  logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"
-}
-
-const menuItems = [
-  { 
-    category: 'Overview', 
-    items: [
-      { name: 'Dashboard', path: '/admin/dashboard', icon: icons.dashboard },
-    ]
-  },
-  { 
-    category: 'Clothing & Stock', 
-    items: [
-      { name: 'Add Product', path: '/admin/products/add', icon: icons.products }, // Using 'products' icon
-      { name: 'Inventory', path: '/admin/inventory', icon: icons.inventory },
-      { name: 'Orders', path: '/admin/orders', icon: icons.orders },
-    ]
-  },
-  { 
-    category: 'People', 
-    items: [
-      { name: 'View Customers', path: '/admin/customers', icon: icons.users },
-    ]
-  },
-  { 
-    category: 'System', 
-    items: [
-      { name: 'Settings', path: '/admin/settings', icon: icons.settings },
-    ]
-  }
-]
-
-const isActive = (path) => route.path === path
-</script>
-
 <template>
-  <aside class="sidebar" :class="{ 'collapsed': isCollapsed }">
-    
-    <div class="sidebar-header">
-      <div class="brand" v-if="!isCollapsed">
-        <span class="brand-icon">👕</span>
-        <h3>StyleAdmin</h3>
+  <aside :class="['sidebar', { collapsed: isCollapsed }]">
+    <div class="sidebar-top">
+      <div class="brand" @click="goHome">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <div class="brand-text" v-if="!isCollapsed">
+          <span>StyleAdmin</span>
+        </div>
       </div>
-      <button class="toggle-btn" @click="toggleSidebar">
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+
+      <button class="collapse-btn" @click="toggleSidebar" :title="isCollapsed ? 'Expand' : 'Collapse'">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
           <path :d="isCollapsed ? icons.chevronRight : icons.chevronLeft" />
         </svg>
       </button>
     </div>
 
     <nav class="sidebar-nav">
-      <div v-for="(group, idx) in menuItems" :key="idx" class="menu-group">
-        <p v-if="!isCollapsed" class="group-title">{{ group.category }}</p>
-        <div v-else class="divider"></div>
-
-        <ul>
-          <li v-for="(item, index) in group.items" :key="index">
-            <router-link :to="item.path" class="nav-link" :class="{ 'active': isActive(item.path) }">
-              
-              <div class="icon-box">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <path :d="item.icon" />
-                </svg>
-              </div>
-
-              <span v-if="!isCollapsed" class="link-text">{{ item.name }}</span>
-              
-              <span v-if="isCollapsed" class="tooltip">{{ item.name }}</span>
-            </router-link>
+      <div class="nav-section">
+        <h3 class="nav-heading" v-if="!isCollapsed">PAGES</h3>
+        
+        <ul class="nav-list">
+          <li
+            v-for="item in menuItems"
+            :key="item.key"
+            :class="{ active: activeKey === item.key }"
+            @click="handleClick(item)"
+          >
+            <span class="item-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path :d="item.icon" />
+              </svg>
+            </span>
+            <span class="item-label" v-if="!isCollapsed">{{ item.label }}</span>
           </li>
         </ul>
       </div>
     </nav>
-
+    
     <div class="sidebar-footer">
-      <button class="nav-link logout-btn">
-        <div class="icon-box">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <button class="logout-btn" @click="logout">
+        <div class="item-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path :d="icons.logout" />
           </svg>
         </div>
-        <span v-if="!isCollapsed" class="link-text">Logout</span>
+        <span v-if="!isCollapsed">Logout</span>
       </button>
     </div>
-
   </aside>
 </template>
 
-<style scoped>
-/* --- VARIABLES --- */
-:root {
-  --bg-color: rgba(255, 255, 255, 0.08);
-  --text-color: #e0e0e0;
-  --active-bg: rgba(0, 255, 255, 0.12);
-  --active-text: #00eaff;
-  --accent: #00eaff;
-  --width-open: 250px;
-  --width-closed: 70px;
+<script setup>
+import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+const isCollapsed = ref(false)
+const activeKey = ref('dashboard')
+
+const icons = {
+  dashboard: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+  addproducts: "M12 2l10 6.5v7L12 22 2 15.5v-7L12 2z M12 22v-6.5",
+  inventory: "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z",
+  orders: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z M3 6h18 M16 10a4 4 0 0 1-8 0",
+  customers: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M16 3.13a4 4 0 0 1 0 7.75",
+  settings: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.18-.08a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l.08.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.18.08a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l.08-.18a2 2 0 0 0-2-2z",
+  chevronLeft: "M15 18l-6-6 6-6",
+  chevronRight: "M9 18l6-6-6-6",
+  logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"
 }
 
-/* --- LAYOUT --- */
+const menuItems = [
+  { key: 'dashboard', label: 'Dashboard', icon: icons.dashboard },
+  { key: 'addproducts', label: 'Add Products', icon: icons.addproducts },
+  { key: 'inventory', label: 'Inventory', icon: icons.inventory },
+  { key: 'orders', label: 'Orders', icon: icons.orders },
+  { key: 'customers', label: 'Customers', icon: icons.customers },
+  { key: 'settings', label: 'Settings', icon: icons.settings }
+]
+
+const routes = {
+  dashboard: '/admindashboard',
+  addproducts: '/addproducts',
+  inventory: '/inventory',
+  orders: '/orders',
+  customers: '/customers',
+  settings: '/settings'
+}
+
+const handleClick = (item) => {
+  activeKey.value = item.key
+  router.push(routes[item.key])
+}
+
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+
+const goHome = () => {
+  router.push('/admindashboard')
+}
+
+const logout = () => {
+  router.push('/login')
+}
+
+watch(() => route.path, (path) => {
+  const routeKey = Object.keys(routes).find(key => routes[key] === path)
+  if (routeKey) activeKey.value = routeKey
+}, { immediate: true })
+</script>
+
+<style scoped>
 .sidebar {
+  width: 250px;
+  height: 100vh;
+  background: white;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: var(--width-open);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(18px);
-  color: var(--text-color);
-  transition: width 0.3s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  overflow-x: hidden;
+  transition: all 0.3s ease;
+  position: sticky;
+  top: 0;
+  border-right: 1px solid #e5e7eb;
 }
 
 .sidebar.collapsed {
-  width: var(--width-closed);
+  width: 70px;
+  padding: 1rem 0.5rem;
 }
 
-/* --- HEADER --- */
-.sidebar-header {
+.sidebar-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.4rem;
-  height: 64px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.brand h3 {
-  margin: 0;
-  color: #00eaff;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-color);
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
+  color: #374151;
+}
+
+.brand-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s;
+  width: 32px;
+  height: 32px;
+  background: #3b82f6;
+  border-radius: 8px;
+  color: white;
 }
 
-.toggle-btn:hover {
-  background: rgba(0, 255, 255, 0.12);
-  color: #00eaff;
-  box-shadow: 0px 0px 8px #00eaff4a;
+.brand-text span {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #111827;
 }
 
-/* --- NAVIGATION --- */
+.collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.collapse-btn:hover {
+  background: #e5e7eb;
+}
+
 .sidebar-nav {
   flex: 1;
-  padding: 1rem 0;
-  overflow-y: auto;
 }
 
-.menu-group {
-  margin-bottom: 1.5rem;
-}
-
-.group-title {
+.nav-heading {
+  color: #6b7280;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 0 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #7b809a;
-  white-space: nowrap;
+  margin: 0 0 1rem 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-.divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  margin: 0.5rem 1rem;
-}
-
-ul {
+.nav-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.nav-link {
+.nav-list li {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1.5rem;
-  text-decoration: none;
-  color: var(--text-color);
-  transition: all 0.25s;
-  position: relative;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.25rem;
+  border-radius: 8px;
   cursor: pointer;
-  border-radius: 10px;
-  margin: 0 0.5rem;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.nav-link:hover {
-  background: rgba(0, 255, 255, 0.12);
-  color: #00eaff;
-  box-shadow: 0px 0px 8px #00eaff4a;
+.nav-list li:hover {
+  background: #f3f4f6;
 }
 
-.nav-link.active {
-  background: rgba(0, 255, 255, 0.12);
-  color: #00eaff;
-  border-right: 3px solid #00eaff;
-  box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.25);
+.nav-list li.active {
+  background: #3b82f6;
+  color: white;
 }
 
-.icon-box {
-  display: flex;
+.item-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-}
-
-.link-text {
-  margin-left: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  font-size: 0.95rem;
-}
-
-/* --- TOOLTIP --- */
-.tooltip {
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #000;
-  color: #fff;
-  padding: 8px 12px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.2s;
-  z-index: 50;
-  margin-left: 10px;
-  backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f3f4f6;
+  flex: 0 0 36px;
 }
 
-.sidebar.collapsed .nav-link:hover .tooltip {
-  opacity: 1;
+.nav-list li.active .item-icon {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* --- FOOTER --- */
+.item-label {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
 .sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.5rem 0;
-  margin: 0 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
   width: 100%;
   background: none;
   border: none;
-  font-family: inherit;
-  font-size: 1rem;
-  border-radius: 10px;
 }
 
 .logout-btn:hover {
-  background: rgba(255, 56, 96, 0.12);
-  color: #ff3860;
-  box-shadow: 0px 0px 8px #ff38604a;
+  background: #f3f4f6;
 }
 
-/* Scrollbar Styling */
-.sidebar-nav::-webkit-scrollbar {
-  width: 6px;
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-heading,
+.sidebar.collapsed .item-label {
+  display: none;
 }
 
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+.sidebar.collapsed .nav-list li,
+.sidebar.collapsed .logout-btn {
+  justify-content: center;
+  padding: 0.75rem;
 }
 
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+  }
 }
 </style>

@@ -3,27 +3,26 @@
     <div class="container">
       
       <router-link to="/" class="brand">
-        FashionStore<span class="dot">.</span>
+        Clothing Store<span class="dot">.</span>
       </router-link>
 
       <div class="desktop-menu">
         <router-link to="/" class="nav-link">Home</router-link>
-        <router-link to="/about" class="nav-link">About</router-link>
         <router-link to="/adminlogin" class="nav-link admin-link">Admin</router-link>
       </div>
 
       <div class="nav-actions">
         <router-link to="/login" class="icon-btn desktop-only" aria-label="Account">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </router-link>
 
         <router-link to="/adminlogin" class="icon-btn desktop-only admin-icon" aria-label="Admin Login">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 15l-8-4V6l8 4 8-4v5l-8 4z"/>
-            <path d="M4 10v8l8 4 8-4v-8"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
         </router-link>
 
@@ -40,7 +39,6 @@
       <div v-if="isMenuOpen" class="mobile-menu">
         <div class="mobile-links">
           <router-link to="/" @click="toggleMenu">Home</router-link>
-          <router-link to="/about" @click="toggleMenu">About</router-link>
           <div class="divider"></div>
           <router-link to="/login" @click="toggleMenu">Login</router-link>
           <router-link to="/adminlogin" @click="toggleMenu" class="admin-mobile-link">Admin Login</router-link>
@@ -65,8 +63,14 @@ const toggleMenu = () => {
   document.body.style.overflow = isMenuOpen.value ? 'hidden' : '';
 };
 
-onMounted(() => window.addEventListener('scroll', handleScroll));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+  document.body.style.overflow = '';
+});
 </script>
 
 <style scoped>
@@ -106,7 +110,9 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   color: inherit;
   letter-spacing: -0.5px;
 }
-.dot { color: #4f46e5; }
+.dot { 
+  color: #4f46e5; 
+}
 
 .desktop-menu { 
   display: flex; 
@@ -142,10 +148,9 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   width: 100%; 
 }
 
-/* Admin link styling */
-.admin-link {
-  font-weight: 600;
+.admin-link, .admin-icon {
   color: #4f46e5;
+  font-weight: 600;
 }
 
 .nav-actions { 
@@ -165,30 +170,39 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   text-decoration: none;
 }
 
-.admin-icon {
-  color: #4f46e5;
-}
-
 .mobile-toggle { 
-  display: none; 
+  display: none;
   background: none; 
   border: none; 
   cursor: pointer; 
   z-index: 1002; 
   padding: 0; 
+  width: 24px;
+  height: 24px;
+}
+
+.hamburger { 
+  position: relative;
+  height: 16px;
 }
 
 .hamburger span {
   display: block; 
-  width: 24px; 
+  width: 100%; 
   height: 2px; 
   background: currentColor;
   margin: 5px 0; 
   transition: 0.3s;
+  position: absolute;
 }
 
+.hamburger span:nth-child(1) { top: 0; }
+.hamburger span:nth-child(2) { top: 7px; }
+.hamburger span:nth-child(3) { top: 14px; }
+
 .hamburger.open span:nth-child(1) { 
-  transform: rotate(45deg) translate(5px, 5px); 
+  transform: rotate(45deg);
+  top: 7px;
 }
 
 .hamburger.open span:nth-child(2) { 
@@ -196,7 +210,8 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 }
 
 .hamburger.open span:nth-child(3) { 
-  transform: rotate(-45deg) translate(5px, -5px); 
+  transform: rotate(-45deg);
+  top: 7px;
 }
 
 .mobile-menu {
@@ -208,6 +223,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   flex-direction: column; 
   justify-content: center; 
   align-items: center;
+  overflow-y: auto;
 }
 
 .mobile-links { 
@@ -232,7 +248,8 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 .divider { 
   height: 1px; 
   background: #eee; 
-  width: 100%; 
+  width: 50%; 
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
@@ -245,9 +262,11 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   .navbar { 
     color: #1a1a1a; 
     background: white; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1rem 0; 
   }
   .navbar.scrolled { 
-    padding: 1rem 0; 
+    background: white;
   }
 }
 
@@ -255,7 +274,10 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
   transition: transform 0.3s ease-in-out; 
 }
 
-.slide-enter-from, .slide-leave-to { 
+.slide-enter-from { 
+  transform: translateX(100%); 
+}
+.slide-leave-to { 
   transform: translateX(100%); 
 }
 </style>

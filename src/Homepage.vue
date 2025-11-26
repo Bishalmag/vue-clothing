@@ -6,7 +6,6 @@
         <div class="hero-content">
           <span class="hero-tag">Summer Collection 2024</span>
           <h1 class="hero-title">Elevate Your<br>Everyday Look</h1>
-          <router-link to="/shop" class="cta-button">Shop Collection</router-link>
         </div>
       </div>
     </section>
@@ -27,7 +26,7 @@
       <div class="container">
         <div class="section-header">
           <h2>Trending Now</h2>
-          <router-link to="/shop" class="view-all">View All</router-link>
+          <router-link to="" class="view-all">View All</router-link>
         </div>
         <div class="product-grid">
           <div v-for="item in trendingItems" :key="item.id" class="product-card">
@@ -37,21 +36,9 @@
             </div>
             <div class="product-info">
               <h4>{{ item.name }}</h4>
-              <p class="price">${{ item.price }}</p>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section class="newsletter section">
-      <div class="newsletter-content">
-        <h2>Join the Club</h2>
-        <p>Get 10% off your first order and exclusive access to new drops.</p>
-        <form @submit.prevent="subscribe" class="input-group">
-          <input type="email" placeholder="Enter your email" required />
-          <button type="submit">Subscribe</button>
-        </form>
       </div>
     </section>
   </main>
@@ -60,24 +47,23 @@
 <script setup>
 import { ref } from 'vue';
 
-/* DATA: Mock data for categories and trending items to render the UI dynamically */
 const categories = ref([
-  { id: 1, name: 'Women', link: '/women', image: 'https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?w=600&q=80' },
-  { id: 2, name: 'Men', link: '/men', image: 'https://images.unsplash.com/photo-1490578474871-521c12b436a5?w=600&q=80' },
-  { id: 3, name: 'Accessories', link: '/accessories', image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=600&q=80' }
+  { id: 1, name: 'Women', link: '', image: 'https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?w=600&q=80' },
+  // Changed image URL again to force a cache refresh
+  { id: 2, name: 'Men', link: '', image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=600' }, 
+  { id: 3, name: 'Accessories', link: '', image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=600&q=80' }
 ]);
 
 const trendingItems = ref([
-  { id: 1, name: 'Oversized Denim Jacket', price: 89.00, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80' },
-  { id: 2, name: 'Classic White Tee', price: 29.00, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80' },
-  { id: 3, name: 'Urban Cargo Pants', price: 65.00, image: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=600&q=80' },
-  { id: 4, name: 'Minimalist Sneaker', price: 110.00, image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80' }
+  { id: 1, name: 'Oversized Denim Jacket', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80' },
+  { id: 2, name: 'Classic White Tee', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80' },
+  { id: 3, name: 'Urban Cargo Pants', image: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=600&q=80' },
+  { id: 4, name: 'Minimalist Sneaker', image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80' }
 ]);
-
-const subscribe = () => alert('Subscribed!');
 </script>
+
 <style scoped>
-/* Variables & Reset */
+/* Rest of the CSS remains the same as provided */
 .landing-wrapper { 
   color: #111; 
   font-family: 'Inter', sans-serif; 
@@ -143,20 +129,6 @@ img {
   margin-bottom: 2rem; 
 }
 
-.cta-button { 
-  background: white; 
-  color: black; 
-  padding: 1rem 2.5rem; 
-  text-decoration: none; 
-  font-weight: 600; 
-  transition: 0.3s; 
-}
-
-.cta-button:hover { 
-  background: #111; 
-  color: white; 
-}
-
 /* Categories */
 .category-grid { 
   display: grid; 
@@ -168,6 +140,8 @@ img {
   position: relative; 
   height: 400px; 
   overflow: hidden; 
+  /* Added a fallback background to verify the card box is rendering */
+  background: #d4d4d4; 
 }
 
 .category-card img { 
@@ -253,40 +227,6 @@ img {
   margin: 0; 
 }
 
-.price { 
-  color: #666; 
-  margin-top: 0.25rem; 
-  font-size: 0.95rem; 
-}
-
-/* Newsletter */
-.newsletter-content { 
-  max-width: 500px; 
-  margin: 0 auto; 
-  text-align: center; 
-}
-
-.input-group { 
-  display: flex; 
-  gap: 0.5rem; 
-  margin-top: 2rem; 
-}
-
-.input-group input { 
-  flex: 1; 
-  padding: 1rem; 
-  border: 1px solid #ddd; 
-  outline: none; 
-}
-
-.input-group button { 
-  padding: 1rem 2rem; 
-  background: #111; 
-  color: white; 
-  border: none; 
-  cursor: pointer; 
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title { 
@@ -295,10 +235,6 @@ img {
   
   .category-card { 
     height: 250px; 
-  }
-  
-  .input-group { 
-    flex-direction: column; 
   }
 }
 

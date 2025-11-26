@@ -16,15 +16,23 @@ const isUserRoute = computed(() => {
     '/orderhistory', 
     '/wishlist',
     '/favourite',
-    '/orderdetails'
+    '/orderdetails',
+    '/privacy',
+    '/about',
+    '/support',
   ]
   return userRoutes.includes(route.path)
 })
 
 const isAdminRoute = computed(() => {
   const adminRoutes = [
-    '/admindashboard'
-    // '/admin/products'
+    '/admindashboard',
+    '/addproducts',
+    '/customers',
+    '/orders',
+    '/inventory',
+    '/settings'
+
   ]
   return adminRoutes.includes(route.path)
 })

@@ -25,7 +25,7 @@ const toggleProfileMenu = () => {
 
 const logout = () => {
   // Add actual logout logic here (clear tokens, etc)
-  router.push('/login')
+  router.push('/')
 }
 
 // Close dropdown when clicking outside

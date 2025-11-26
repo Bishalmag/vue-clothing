@@ -1,21 +1,15 @@
 <template>
   <header class="navbar">
-    <div class="nav-left">
-      <div class="breadcrumb">
-        <span class="active">Dashboard</span>
-      </div>
-    </div>
-
     <div class="nav-center">
       <form class="search-form" @submit.prevent="$emit('search', searchQuery)">
-        <input
-          v-model="searchQuery"
-          class="search-input"
-          type="text"
+        <input 
+          v-model="searchQuery" 
+          class="search-input" 
+          type="text" 
           placeholder="Type here..."
-        />
+        >
         <button type="submit" class="search-btn">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <svg width="16" height="16" viewBox="0 0 16 16">
             <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" stroke-width="1.5"/>
             <path d="M14 14L11.1 11.1" stroke="currentColor" stroke-width="1.5"/>
           </svg>
@@ -24,62 +18,62 @@
     </div>
 
     <div class="nav-right">
-      <router-link to="/cart" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M3 3H4.5L5.5 12.5H16.5L17.5 6H7" stroke="currentColor" stroke-width="1.5"/>
-          <circle cx="7.5" cy="16.5" r="1.5" stroke="currentColor" stroke-width="1.5"/>
-          <circle cx="15.5" cy="16.5" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+      
+      <button class="nav-icon" aria-label="Notifications">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2 12 2C11.17 2 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span v-if="cartCount > 0" class="badge">{{ cartCount }}</span>
-      </router-link>
+        <span v-if="notificationCount > 0" class="badge">{{ notificationCount }}</span>
+      </button>
 
-      <router-link to="/favourite" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 17.5L8.55 16.15C4.4 12.5 2 10.225 2 7.5C2 5.25 3.75 3.5 6 3.5C7.35 3.5 8.675 4.125 9.5 5.1C10.325 4.125 11.65 3.5 13 3.5C15.25 3.5 17 5.25 17 7.5C17 10.225 14.6 12.5 10.45 16.15L10 17.5Z" 
-                :fill="isFavorited ? '#e74c3c' : 'none'" 
-                :stroke="isFavorited ? '#e74c3c' : 'currentColor'" 
-                stroke-width="1.5"/>
-        </svg>
-      </router-link>
+      <div class="profile-container">
+        <div class="profile" @click="toggleProfileMenu" role="button" tabindex="0">
+          <div class="avatar">A</div>
+        </div>
+        
+        <div v-if="showProfileMenu" class="dropdown">
+          <div class="dropdown-header">
+            <p class="email">user@gmail.com</p>
+          </div>
+          <div class="divider"></div>
+          <router-link to="/settings" class="dropdown-item" @click="closeDropdown">Settings</router-link>
+          <div class="divider"></div>
+          <button @click="logout" class="dropdown-item danger">Logout</button>
+        </div>
+      </div>
 
-      <router-link to="/wishlist" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M15 2.5H5C4.44772 2.5 4 2.94772 4 3.5V17.5C4 17.7761 4.22386 18 4.5 18C4.63261 18 4.75979 17.9473 4.85355 17.8536L10 12.7071L15.1464 17.8536C15.2402 17.9473 15.3674 18 15.5 18C15.7761 18 16 17.7761 16 17.5V3.5C16 2.94772 15.5523 2.5 15 2.5Z" 
-                stroke="currentColor" 
-                stroke-width="1.5"/>
-        </svg>
-      </router-link>
-
-      <router-link to="/myorder" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M16.5 6.66667H3.5M5.16667 3.33333H14.8333C15.7538 3.33333 16.5 4.07953 16.5 5V15C16.5 15.9205 15.7538 16.6667 14.8333 16.6667H5.16667C4.24619 16.6667 3.5 15.9205 3.5 15V5C3.5 4.07953 4.24619 3.33333 5.16667 3.33333Z" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-      </router-link>
-
-      <router-link to="/orderhistory" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 5V10L13 13M10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 13.866 13.866 17 10 17Z" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-      </router-link>
-      <router-link to="/orderdetails" class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M12 6V12H16M12 20C8.13401 20 5 16.866 5 13C5 9.13401 8.13401 6 12 6C15.866 6 19 9.13401 19 13C19 16.866 15.866 20 12 20Z" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-      </router-link>
-
-      <router-link to="/profile" class="profile">
-        <div class="avatar">A</div>
-      </router-link>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const searchQuery = ref('')
-const cartCount = ref(3)
-const isFavorited = ref(false)
+const showProfileMenu = ref(false)
+const notificationCount = ref(2) // Mock data for notifications
+
+const toggleProfileMenu = () => showProfileMenu.value = !showProfileMenu.value
+const closeDropdown = () => showProfileMenu.value = false
+
+const logout = () => {
+  // Add actual logout logic here (clear tokens, etc.)
+  router.push('/login')
+  closeDropdown()
+}
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event) => {
+  const profileContainer = document.querySelector('.profile-container')
+  if (profileContainer && !profileContainer.contains(event.target)) {
+    closeDropdown()
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped>
@@ -92,146 +86,207 @@ const isFavorited = ref(false)
   border-bottom: 1px solid #eef2f6;
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 100;
+  height: 30px; /* Fixed height for consistency */
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.breadcrumb {
-  font-size: 0.875rem;
-  font-weight: 600;
+.nav-left .breadcrumb {
+  font-weight: 700;
   color: #344767;
+  font-size: 1.1rem;
 }
 
 .nav-center {
   flex: 1;
-  margin: 0 1rem;
+  margin: 0 2rem;
   display: flex;
   justify-content: center;
 }
 
 .search-form {
   display: flex;
+  align-items: center;
   width: 100%;
   max-width: 400px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  overflow: hidden;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
 }
 
 .search-form:focus-within {
-  border-color: #3498db;
+  border-color: #667eea;
+  background: #fff;
 }
 
 .search-input {
   flex: 1;
   border: none;
-  padding: 0.75rem 1rem;
+  background: transparent;
+  padding: 0.6rem 1rem;
   outline: none;
+  color: #495057;
   font-size: 0.9rem;
-}
-
-.search-input::placeholder {
-  color: #adb5bd;
 }
 
 .search-btn {
   background: transparent;
   border: none;
-  padding: 0.75rem;
+  padding: 0.6rem 1rem;
   color: #6c757d;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .search-btn:hover {
-  color: #3498db;
+  color: #344767;
 }
 
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .nav-icon {
   position: relative;
+  background: transparent;
+  border: none;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #6c757d;
-  text-decoration: none;
-  transition: all 0.2s;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-icon:hover {
   background: #f8f9fa;
-  color: #3498db;
+  color: #344767;
 }
 
 .badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   background: #e74c3c;
   color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.1rem 0.35rem;
-  border-radius: 999px;
-  min-width: 16px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0;
+  border-radius: 50%;
+  width: 16px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid white; /* Adds a clean cut from the icon */
+}
+
+.profile-container {
+  position: relative;
 }
 
 .profile {
-  padding: 0.25rem;
-  border-radius: 8px;
-  text-decoration: none;
-  margin-left: 0.5rem;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  transition: box-shadow 0.2s;
 }
 
 .profile:hover {
-  background: #f8f9fa;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #2152ff, #21d4fd);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
+.dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+  min-width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  transform-origin: top right;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+.email {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.divider {
+  height: 1px;
+  background: #f0f0f0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: #344767;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+}
+
+.dropdown-item.danger {
+  color: #e74c3c;
+}
+
+.dropdown-item.danger:hover {
+  background: #fff5f5;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .navbar {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
   
   .nav-center {
-    margin: 0 0.5rem;
-  }
-  
-  .nav-icon:nth-child(n+4) {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .nav-center {
-    display: none;
-  }
-  
-  .nav-icon:nth-child(n+3) {
-    display: none;
+    display: none; /* Hide search bar on mobile, or move to a separate row */
   }
 }
 </style>

@@ -2,9 +2,6 @@
   <aside :class="['sidebar', { collapsed }]" role="navigation" aria-label="Main sidebar">
     <div class="sidebar-top">
       <div class="brand" @click="goHome" role="button" tabindex="0" aria-label="userdashboard">
-        <div class="brand-text" v-if="!collapsed">
-          <small>Dashboard</small>
-        </div>
       </div>
 
       <button class="collapse-btn" @click="toggle" :aria-pressed="collapsed" :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
@@ -16,7 +13,7 @@
     </div>
 
     <nav class="sidebar-nav" aria-label="Pages">
-      <h3 class="nav-heading" v-if="!collapsed">PAGES</h3>
+      <h3 class="nav-heading" v-if="!collapsed">MAIN MENU</h3>
 
       <ul>
         <li
@@ -34,8 +31,6 @@
         </li>
       </ul>
     </nav>
-
-
   </aside>
 </template>
 
@@ -46,11 +41,16 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const collapsed = ref(false)
 const activeIndex = ref(0)
-const year = new Date().getFullYear()
 
 const items = [
   { key: 'dashboard', label: 'Dashboard', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zM13 21h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"/></svg>' },
-  { key: 'profile', label: 'Profile', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z" fill="currentColor"/></svg>' },
+  { key: 'cart', label: 'Cart', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/></svg>', badge: '3' },
+  { key: 'favourite', label: 'Favourite', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/></svg>' },
+  { key: 'myorder', label: 'My Orders', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M13 12h7v1.5h-7zm0-2.5h7V11h-7zm0 5h7V16h-7zM21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 15h-9V6h9v13z" fill="currentColor"/></svg>' },
+  { key: 'orderdetails', label: 'Order Details', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" fill="currentColor"/></svg>' },
+  { key: 'wishlist', label: 'Wishlist', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z" fill="currentColor"/></svg>' },
+  { key: 'settings', label: 'Settings', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" fill="currentColor"/></svg>' },
+  { key: 'logout', label: 'Logout', icon: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" fill="currentColor"/></svg>' },
 ]
 
 const sidebarWidth = computed(() => collapsed.value ? '72px' : '250px')
@@ -75,9 +75,20 @@ const handleClick = (item, idx) => {
   activeIndex.value = idx
   const routes = {
     dashboard: '/userdashboard',
-    profile: '/profile',
+    cart: '/cart',
+    favourite: '/favourite',
+    myorder: '/myorder',
+    orderdetails: '/orderdetails',
+    wishlist: '/wishlist',
+    settings: '/setting',
   }
-  router.push(routes[item.key])
+  
+  if (item.key === 'logout') {
+    router.push('/')
+  } else {
+    router.push(routes[item.key])
+  }
+  
   emit('navigate', item.key)
 }
 
@@ -229,18 +240,9 @@ const emit = defineEmits(['navigate'])
   flex-shrink: 0;
 }
 
-.sidebar-footer {
-  padding-top: 0.75rem;
-  border-top: 1px solid #f0f3f7;
-  color: #9aa3b2;
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
 .sidebar.collapsed .nav-heading,
 .sidebar.collapsed .item-label,
-.sidebar.collapsed .item-badge,
-.sidebar.collapsed .sidebar-footer {
+.sidebar.collapsed .item-badge {
   display: none;
 }
 
