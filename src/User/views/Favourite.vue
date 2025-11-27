@@ -1,129 +1,82 @@
+<script setup>
+import { useFavorites } from '@/composables/useFavorites'
+import { useCart } from '@/composables/useCart'
+import { useToast } from '@/composables/useToast'
+
+const { favorites, toggleFavorite } = useFavorites()
+const { addToCart } = useCart()
+const { success } = useToast()
+
+const removeFromFavorites = (id) => {
+  const item = favorites.value.find(f => f.id === id)
+  if (item) toggleFavorite(item) 
+}
+
+const handleAddToCart = (item) => {
+  addToCart(item)
+  success(`Added ${item.name} to cart!`)
+}
+</script>
+
 <template>
-  <div class="favourites-page">
-    <div class="favourites-header">
-      <h1>My Favourites</h1>
-      <p v-if="favouriteItems.length > 0">{{ favouriteItems.length }} items in favourites</p>
-      <p v-else>No items in favourites</p>
+  <div class="favorites-page">
+    <div class="favorites-header">
+      <h1>My Favorites</h1>
+      <p>{{ favorites.length ? `${favorites.length} items in favorites` : 'No items in favorites' }}</p>
     </div>
 
-    <div class="favourites-content">
-      <!-- Empty State -->
-      <div v-if="favouriteItems.length === 0" class="empty-favourites">
+    <div class="favorites-content">
+      <div v-if="favorites.length === 0" class="empty-favorites">
         <div class="empty-icon">❤️</div>
-        <h2>No favourites yet</h2>
+        <h2>No favorites yet</h2>
         <p>Start adding items you love</p>
         <router-link to="/" class="shop-now-btn">
           Shop Now
         </router-link>
       </div>
 
-      <!-- Favourite Items Grid -->
-      <div v-else class="favourites-grid">
-        <div v-for="item in favouriteItems" :key="item.id" class="favourite-item">
+      <div v-else class="favorites-grid">
+        <div v-for="item in favorites" :key="item.id" class="favorite-item">
           <div class="item-image">
             <img :src="item.image" :alt="item.name" />
-            <button 
-              @click="removeFromFavourites(item.id)" 
-              class="remove-favourite-btn"
-              aria-label="Remove from favourites"
-            >
+            <button @click="removeFromFavorites(item.id)" class="remove-favorite-btn">
               ❤️
             </button>
           </div>
-          
+
           <div class="item-info">
-            <h3 class="item-name">{{ item.name }}</h3>
-            <p class="item-category">{{ item.category }}</p>
-            <p class="item-price">${{ item.price }}</p>
+            <h3>{{ item.name }}</h3>
+            <p class="category">{{ item.category }}</p>
+            <p class="price">${{ item.price }}</p>
           </div>
 
-          <div class="item-actions">
-            <button 
-              @click="addToCart(item)" 
-              class="add-to-cart-btn"
-            >
-              Add to Cart
-            </button>
-          </div>
+          <button class="add-to-cart-btn" @click="handleAddToCart(item)">
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-// Sample favourites data
-const favouriteItems = ref([
-  {
-    id: 1,
-    name: 'Classic White T-Shirt',
-    category: 'T-Shirts',
-    price: 29.99,
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300'
-  },
-  {
-    id: 2,
-    name: 'Slim Fit Jeans',
-    category: 'Jeans',
-    price: 79.99,
-    image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=300'
-  },
-  {
-    id: 3,
-    name: 'Sports Sneakers',
-    category: 'Shoes',
-    price: 129.99,
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300'
-  },
-  {
-    id: 4,
-    name: 'Winter Jacket',
-    category: 'Jackets',
-    price: 149.99,
-    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300'
-  }
-])
-
-// Methods
-const removeFromFavourites = (itemId) => {
-  favouriteItems.value = favouriteItems.value.filter(item => item.id !== itemId)
-}
-
-const addToCart = (item) => {
-  // Emit event or call store action to add to cart
-  console.log('Added to cart:', item)
-  // You can add toast notification here
-  alert(`Added ${item.name} to cart!`)
-}
-</script>
-
 <style scoped>
-.favourites-page {
+.favorites-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-.favourites-header {
+.favorites-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.favourites-header h1 {
+.favorites-header h1 {
   font-size: 2rem;
-  color: #344767;
   margin-bottom: 0.5rem;
 }
 
-.favourites-header p {
-  color: #6c757d;
-  font-size: 1rem;
-}
-
-/* Empty State */
-.empty-favourites {
+.empty-favorites {
   text-align: center;
   padding: 4rem 2rem;
 }
@@ -133,48 +86,25 @@ const addToCart = (item) => {
   margin-bottom: 1rem;
 }
 
-.empty-favourites h2 {
-  color: #344767;
-  margin-bottom: 0.5rem;
-}
-
-.empty-favourites p {
-  color: #6c757d;
-  margin-bottom: 2rem;
-}
-
 .shop-now-btn {
   background: #3498db;
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 8px;
   text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.2s;
 }
 
-.shop-now-btn:hover {
-  background: #2980b9;
-}
-
-/* Favourites Grid */
-.favourites-grid {
+.favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
-.favourite-item {
+.favorite-item {
   background: white;
   border-radius: 12px;
   border: 1px solid #eef2f6;
   padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.favourite-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .item-image {
@@ -189,7 +119,7 @@ const addToCart = (item) => {
   border-radius: 8px;
 }
 
-.remove-favourite-btn {
+.remove-favorite-btn {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -199,76 +129,52 @@ const addToCart = (item) => {
   width: 40px;
   height: 40px;
   cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
-
-.remove-favourite-btn:hover {
-  transform: scale(1.1);
 }
 
 .item-info {
   margin-bottom: 1rem;
 }
 
-.item-name {
-  color: #344767;
-  font-size: 1.1rem;
+.item-info h3 {
   margin-bottom: 0.25rem;
-  font-weight: 600;
 }
 
-.item-category {
+.category {
   color: #6c757d;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
 }
 
-.item-price {
+.price {
   color: #3498db;
   font-weight: 600;
   font-size: 1.2rem;
 }
 
-.item-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .add-to-cart-btn {
-  flex: 1;
+  width: 100%;
   background: #2ecc71;
   color: white;
   border: none;
   padding: 0.75rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
 }
 
-.add-to-cart-btn:hover {
-  background: #27ae60;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
-  .favourites-page {
+  .favorites-page {
     padding: 1rem;
   }
   
-  .favourites-grid {
+  .favorites-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .favourites-grid {
+  .favorites-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -3,12 +3,27 @@ import { ref, onMounted } from 'vue'
 import Usersidebar from './layouts/Usersidebar.vue'
 import Usernavbar from './layouts/Usernavbar.vue'
 import Userfooter from './layouts/Userfooter.vue'
+
+
 const isAuthenticated = ref(true)
+const toasts = ref([])
+
+// ✅ Define toast function FIRST
+const showToast = (message, type = 'info', duration = 3000) => {
+  const id = Date.now()
+  toasts.value.push({ id, message, type })
+
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(toast => toast.id !== id)
+  }, duration)
+}
 
 onMounted(() => {
   isAuthenticated.value = true
   localStorage.setItem('user', '{"name":"Test User"}')
+  showToast('Welcome back, Test User!', 'success') // ✅ Now this will work
 })
+window.showToast = showToast
 </script>
 
 <template>
@@ -17,13 +32,23 @@ onMounted(() => {
     <div class="main-content-area">
       <Usernavbar />
       
-       <main class="main-content">
+      <main class="main-content">
         <router-view />
       </main>
 
       <Userfooter />
     </div>
-   
+    
+    <!-- Toast Container -->
+    <div class="toast-container">
+      <div 
+        v-for="toast in toasts" 
+        :key="toast.id"
+        :class="['toast', `toast-${toast.type}`]"
+      >
+        {{ toast.message }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,7 +78,6 @@ onMounted(() => {
   transition: width 0.3s ease;
 }
 
-/* Sidebar collapsed state */
 .sidebar.collapsed {
   width: var(--sidebar-collapsed-width);
   min-width: var(--sidebar-collapsed-width);
@@ -69,7 +93,6 @@ onMounted(() => {
   transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
-/* Adjust main content when sidebar is collapsed */
 .sidebar.collapsed ~ .main-content-area {
   margin-left: var(--sidebar-collapsed-width);
   width: calc(100% - var(--sidebar-collapsed-width));
@@ -79,8 +102,8 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: -5px; /* Space for fixed navbar */
-  min-height: calc(100vh - 120px); /* Account for navbar and footer */
+  padding-top: -5px;
+  min-height: calc(100vh - 120px);
 }
 
 .content-container {
@@ -96,7 +119,6 @@ onMounted(() => {
   margin-left: -70px; 
 }
 
-/* Ensure homepage content is properly centered */
 .homepage {
   width: 100%;
   display: flex;
@@ -105,7 +127,49 @@ onMounted(() => {
   justify-content: flex-start;
 }
 
-/* Responsive adjustments */
+/* ✅ Add missing toast styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  animation: slideIn 0.3s ease;
+}
+
+.toast-success {
+  background: #10b981;
+}
+
+.toast-error {
+  background: #ef4444;
+}
+
+.toast-info {
+  background: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);

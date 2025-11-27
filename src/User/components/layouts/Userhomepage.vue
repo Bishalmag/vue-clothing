@@ -56,11 +56,11 @@
               <div class="submeta">{{ product.category }} • {{ product.color }}</div>
 
               <div class="actions">
-                <button @click="toggleFavorite(product)" class="fav">
-                  <span v-if="product.fav">♥</span><span v-else>♡</span>
+                <button @click="handleToggleFavorite(product)" class="fav">
+                  <span v-if="isFavorite(product.id)">♥</span><span v-else>♡</span>
                 </button>
 
-                <button @click="addToCart(product)" class="add">Add</button>
+                <button @click="handleAddToCart(product)" class="add">Add</button>
 
                 <button @click="openQuickView(product)" class="view">Quick view</button>
               </div>
@@ -87,9 +87,10 @@
             <p class="price">${{ quickViewProduct.price.toFixed(2) }}</p>
             <p class="desc">{{ quickViewProduct.description }}</p>
             <div class="modal-actions">
-              <button @click="addToCart(quickViewProduct)" class="add">Add to cart</button>
-              <button @click="toggleFavorite(quickViewProduct)" class="fav">
-                <span v-if="quickViewProduct.fav">♥ Remove</span><span v-else>♡ Favorite</span>
+              <button @click="handleAddToCart(quickViewProduct)" class="add">Add to cart</button>
+              <button @click="handleToggleFavorite(quickViewProduct)" class="fav">
+                <span v-if="isFavorite(quickViewProduct.id)">♥ Remove</span>
+                <span v-else>♡ Favorite</span>
               </button>
             </div>
           </div>
@@ -105,8 +106,8 @@
       <div class="cart-body">
         <p v-if="cartCount === 0" class="muted">Your cart is empty.</p>
         <ul>
-          <li v-for="(item, i) in cartItems" :key="i">
-            {{ item.name }} — ${{ item.price.toFixed(2) }}
+          <li v-for="item in cart" :key="item.id">
+            {{ item.name }} — ${{ item.price.toFixed(2) }} x {{ item.quantity }}
           </li>
         </ul>
       </div>
@@ -119,32 +120,36 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-// UI state
+import { useToast } from '@/composables/useToast'
+import { useCart } from '@/composables/useCart'
+import { useFavorites } from '@/composables/useFavorites'
+
 const selectedCategory = ref('All')
 const sortBy = ref('featured')
-const cartCount = ref(0)
-const cartItems = ref([])
 const page = ref(1)
 const perPage = 6
 const quickViewProduct = ref(null)
 const cartOpen = ref(false)
 
-// Sample data
+const { showToast } = useToast()
+const { addToCart, cart } = useCart()
+const { toggleFavorite, isFavorite } = useFavorites()
+const cartCount = computed(() => cart.value.length)
+
 const categories = ['Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Shoes']
 
 const products = ref([
-  { id: 1, name: 'Classic White Tee', category: 'Tops', color: 'White', price: 19.99, image: 'https://source.unsplash.com/collection/190727/400x400?sig=11', fav: false, description: 'A comfortable classic tee for everyday wear.' },
-  { id: 2, name: 'Denim Jacket', category: 'Outerwear', color: 'Blue', price: 89.0, image: 'https://source.unsplash.com/collection/190727/400x400?sig=12', fav: false, description: 'Stylish denim jacket with a relaxed fit.' },
-  { id: 3, name: 'Cargo Pants', category: 'Bottoms', color: 'Khaki', price: 49.5, image: 'https://source.unsplash.com/collection/190727/400x400?sig=13', fav: false, description: 'Utility-inspired cargo pants with lots of pockets.' },
-  { id: 4, name: 'Leather Sneakers', category: 'Shoes', color: 'Black', price: 120.0, image: 'https://source.unsplash.com/collection/190727/400x400?sig=14', fav: false, description: 'Durable leather sneakers built for comfort.' },
-  { id: 5, name: 'Chunky Scarf', category: 'Accessories', color: 'Grey', price: 29.0, image: 'https://source.unsplash.com/collection/190727/400x400?sig=15', fav: false, description: 'Warm scarf knitted from soft yarn.' },
-  { id: 6, name: 'Striped Shirt', category: 'Tops', color: 'Navy', price: 35.25, image: 'https://source.unsplash.com/collection/190727/400x400?sig=16', fav: false, description: 'Casual striped shirt with a slim cut.' },
-  { id: 7, name: 'Trench Coat', category: 'Outerwear', color: 'Beige', price: 159.0, image: 'https://source.unsplash.com/collection/190727/400x400?sig=17', fav: false, description: 'Classic trench for transitional seasons.' },
-  { id: 8, name: 'Chino Shorts', category: 'Bottoms', color: 'Olive', price: 29.99, image: 'https://source.unsplash.com/collection/190727/400x400?sig=18', fav: false, description: 'Lightweight cotton shorts for warm days.' },
-  { id: 9, name: 'Slip-On Loafers', category: 'Shoes', color: 'Tan', price: 79.0, image: 'https://source.unsplash.com/collection/190727/400x400?sig=19', fav: false, description: 'Smart casual loafers to elevate your outfit.' }
+  { id: 1, name: 'Classic White Tee', category: 'Tops', color: 'White', price: 19.99, image: 'https://picsum.photos/400/400?random=1', description: 'A comfortable classic tee for everyday wear.' },
+  { id: 2, name: 'Denim Jacket', category: 'Outerwear', color: 'Blue', price: 89.0, image: 'https://picsum.photos/400/400?random=2', description: 'Stylish denim jacket with a relaxed fit.' },
+  { id: 3, name: 'Cargo Pants', category: 'Bottoms', color: 'Khaki', price: 49.5, image: 'https://picsum.photos/400/400?random=3', description: 'Utility-inspired cargo pants with lots of pockets.' },
+  { id: 4, name: 'Leather Sneakers', category: 'Shoes', color: 'Black', price: 120.0, image: 'https://picsum.photos/400/400?random=4', description: 'Durable leather sneakers built for comfort.' },
+  { id: 5, name: 'Chunky Scarf', category: 'Accessories', color: 'Grey', price: 29.0, image: 'https://picsum.photos/400/400?random=5', description: 'Warm scarf knitted from soft yarn.' },
+  { id: 6, name: 'Striped Shirt', category: 'Tops', color: 'Navy', price: 35.25, image: 'https://picsum.photos/400/400?random=6', description: 'Casual striped shirt with a slim cut.' },
+  { id: 7, name: 'Trench Coat', category: 'Outerwear', color: 'Beige', price: 159.0, image: 'https://picsum.photos/400/400?random=7', description: 'Classic trench for transitional seasons.' },
+  { id: 8, name: 'Chino Shorts', category: 'Bottoms', color: 'Olive', price: 29.99, image: 'https://picsum.photos/400/400?random=8', description: 'Lightweight cotton shorts for warm days.' },
+  { id: 9, name: 'Slip-On Loafers', category: 'Shoes', color: 'Tan', price: 79.0, image: 'https://picsum.photos/400/400?random=9', description: 'Smart casual loafers to elevate your outfit.' }
 ])
 
-// Computed
 const filteredProducts = computed(() => {
   return products.value.filter(p => 
     selectedCategory.value === 'All' ? true : p.category === selectedCategory.value
@@ -166,19 +171,18 @@ const paginated = computed(() => {
   return sorted.value.slice(start, start + perPage)
 })
 
-// Methods
 function selectCategory(cat) {
   selectedCategory.value = cat
   page.value = 1
 }
 
-function toggleFavorite(product) {
-  product.fav = !product.fav
+function handleAddToCart(product) {
+  addToCart(product)
+  showToast(`"${product.name}" added to cart!`, 'success')
 }
 
-function addToCart(product) {
-  cartCount.value += 1
-  cartItems.value.push({ id: product.id, name: product.name, price: product.price })
+function handleToggleFavorite(product) {
+  toggleFavorite(product)
 }
 
 function openQuickView(product) {
@@ -191,8 +195,7 @@ function closeQuickView() {
 
 function checkout() {
   if (cartCount.value === 0) return
-  cartCount.value = 0
-  cartItems.value = []
+  showToast('Order placed successfully!', 'success')
   cartOpen.value = false
 }
 </script>
