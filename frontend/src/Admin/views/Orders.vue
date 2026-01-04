@@ -1,44 +1,10 @@
 <template>
   <div class="admin-orders">
-    <!-- Header -->
     <div class="page-header">
       <h1>Orders Management</h1>
       <p>Manage and track all customer orders</p>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>TOTAL ORDERS</h3>
-          <div class="stat-value">324</div>
-        </div>
-        <div class="stat-icon">📦</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>PENDING</h3>
-          <div class="stat-value">12</div>
-        </div>
-        <div class="stat-icon">⏳</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>COMPLETED</h3>
-          <div class="stat-value">289</div>
-        </div>
-        <div class="stat-icon">✅</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-content">
-          <h3>REVENUE</h3>
-          <div class="stat-value">$12,458</div>
-        </div>
-        <div class="stat-icon">💰</div>
-      </div>
-    </div>
-
-    <!-- Filters and Search -->
     <div class="filters-section">
       <div class="search-box">
         <input 
@@ -62,8 +28,7 @@
       </div>
     </div>
 
-    <!-- Orders Table -->
-    <div class="orders-table-container">
+    <div class="orders-table-container" v-if="orders.length">
       <table class="orders-table">
         <thead>
           <tr>
@@ -80,35 +45,28 @@
             <td class="order-id">#{{ order.id }}</td>
             <td class="customer">
               <div class="customer-info">
-                <strong>{{ order.customer.name }}</strong>
-                <span>{{ order.customer.email }}</span>
+                <strong>{{ order.user?.name || 'Unknown' }}</strong>
+                <span>{{ order.user?.email || 'No email' }}</span>
               </div>
             </td>
-            <td class="date">{{ formatDate(order.date) }}</td>
-            <td class="amount">${{ order.amount }}</td>
+            <td class="date">{{ formatDate(order.created_at) }}</td>
+            <td class="amount">${{ formatPrice(order.total_amount) }}</td>
             <td>
-              <span :class="['status', order.status]">
-                {{ order.status }}
+              <span :class="['status', getStatusClass(order.status)]">
+                {{ getStatusText(order.status) }}
               </span>
             </td>
             <td class="actions">
-              <button class="action-btn view" @click="viewOrder(order)" title="View Details">
-                👁️
-              </button>
-              <button class="action-btn edit" @click="editOrder(order)" title="Edit Order">
-                ✏️
-              </button>
-              <button class="action-btn delete" @click="deleteOrder(order)" title="Delete Order">
-                🗑️
-              </button>
+              <button class="action-btn view" @click="viewOrder(order)">👁️</button>
+              <button class="action-btn edit" @click="editOrder(order)">✏️</button>
+              <button class="action-btn delete" @click="deleteOrder(order)">🗑️</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="filteredOrders.length === 0" class="empty-state">
+    <div v-else class="empty-state">
       <div class="empty-icon">📦</div>
       <h3>No orders found</h3>
       <p>There are no orders matching your current filters.</p>
@@ -117,93 +75,51 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
+const orders = ref([])
 const searchQuery = ref('')
 const activeFilter = ref('all')
 
 const filters = [
   { label: 'All Orders', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Shipped', value: 'shipped' },
-  { label: 'Delivered', value: 'delivered' },
-  { label: 'Cancelled', value: 'cancelled' }
+  { label: 'Pending', value: '0' },
+  { label: 'Shipped', value: '1' },
+  { label: 'Cancelled', value: '2' }
 ]
 
-// Mock data - replace with actual API call
-const orders = ref([
-  {
-    id: 'ORD-001',
-    customer: { name: 'John Doe', email: 'john@example.com' },
-    date: '2024-01-15',
-    amount: 129.99,
-    status: 'pending',
-    items: [
-      { name: 'Classic White Tee', quantity: 2, price: 29.99 },
-      { name: 'Denim Jacket', quantity: 1, price: 69.99 }
-    ]
-  },
-  {
-    id: 'ORD-002',
-    customer: { name: 'Jane Smith', email: 'jane@example.com' },
-    date: '2024-01-14',
-    amount: 89.99,
-    status: 'processing',
-    items: [
-      { name: 'Urban Cargo Pants', quantity: 1, price: 65.00 },
-      { name: 'Minimalist Sneaker', quantity: 1, price: 24.99 }
-    ]
-  },
-  {
-    id: 'ORD-003',
-    customer: { name: 'Mike Johnson', email: 'mike@example.com' },
-    date: '2024-01-13',
-    amount: 45.50,
-    status: 'shipped',
-    items: [
-      { name: 'Classic White Tee', quantity: 1, price: 29.99 },
-      { name: 'Baseball Cap', quantity: 1, price: 15.51 }
-    ]
-  },
-  {
-    id: 'ORD-004',
-    customer: { name: 'Sarah Wilson', email: 'sarah@example.com' },
-    date: '2024-01-12',
-    amount: 199.99,
-    status: 'delivered',
-    items: [
-      { name: 'Winter Coat', quantity: 1, price: 129.99 },
-      { name: 'Wool Scarf', quantity: 2, price: 35.00 }
-    ]
-  },
-  {
-    id: 'ORD-005',
-    customer: { name: 'David Brown', email: 'david@example.com' },
-    date: '2024-01-11',
-    amount: 75.25,
-    status: 'cancelled',
-    items: [
-      { name: 'Sports Shorts', quantity: 3, price: 25.08 }
-    ]
+const fetchOrders = async () => {
+  try {
+    const res = await axios.get('/api/admin/orders', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    })
+    orders.value = res.data.data || []
+  } catch (err) {
+    console.error('Failed to fetch orders:', err)
+    orders.value = []
   }
-])
+}
+
+onMounted(() => {
+  fetchOrders()
+})
 
 const filteredOrders = computed(() => {
   let filtered = orders.value
 
-  // Filter by status
   if (activeFilter.value !== 'all') {
-    filtered = filtered.filter(order => order.status === activeFilter.value)
+    filtered = filtered.filter(o => o.status.toString() === activeFilter.value)
   }
 
-  // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(order => 
-      order.id.toLowerCase().includes(query) ||
-      order.customer.name.toLowerCase().includes(query) ||
-      order.customer.email.toLowerCase().includes(query)
+    filtered = filtered.filter(o =>
+      o.id.toString().toLowerCase().includes(query) ||
+      (o.user?.name || '').toLowerCase().includes(query) ||
+      (o.user?.email || '').toLowerCase().includes(query)
     )
   }
 
@@ -214,27 +130,86 @@ const setFilter = (filter) => {
   activeFilter.value = filter
 }
 
+const formatPrice = (value) => {
+  const num = parseFloat(value)
+  return isNaN(num) ? '0.00' : num.toFixed(2)
+}
+
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch {
+    return dateString
+  }
+}
+
+const getStatusText = (status) => {
+  const statusMap = {
+    0: 'Pending',
+    1: 'Shipped',
+    2: 'Cancelled'
+  }
+  return statusMap[status] || 'Unknown'
+}
+
+const getStatusClass = (status) => {
+  const classMap = {
+    0: 'pending',
+    1: 'shipped',
+    2: 'cancelled'
+  }
+  return classMap[status] || 'pending'
 }
 
 const viewOrder = (order) => {
   alert(`Viewing order: ${order.id}`)
-  // Navigate to order details page
 }
 
 const editOrder = (order) => {
-  alert(`Editing order: ${order.id}`)
-  // Open edit modal or navigate to edit page
+  const newStatus = prompt(`Change status for order ${order.id}:\n0 = Pending\n1 = Shipped\n2 = Cancelled`, order.status)
+  if (newStatus !== null) {
+    updateOrderStatus(order.id, parseInt(newStatus))
+  }
 }
 
-const deleteOrder = (order) => {
-  if (confirm(`Are you sure you want to delete order ${order.id}?`)) {
+const updateOrderStatus = async (orderId, status) => {
+  try {
+    await axios.put(`/api/admin/orders/${orderId}`, {
+      status: status
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    })
+    
+    // Update local state
+    const index = orders.value.findIndex(o => o.id === orderId)
+    if (index !== -1) {
+      orders.value[index].status = status
+    }
+  } catch (err) {
+    console.error('Failed to update order:', err)
+    alert('Failed to update order status')
+  }
+}
+
+const deleteOrder = async (order) => {
+  if (!confirm(`Are you sure you want to delete order ${order.id}?`)) return
+
+  try {
+    await axios.delete(`/api/admin/orders/${order.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    })
     orders.value = orders.value.filter(o => o.id !== order.id)
+  } catch (err) {
+    console.error('Failed to delete order:', err)
+    alert('Failed to delete order')
   }
 }
 </script>
@@ -242,108 +217,45 @@ const deleteOrder = (order) => {
 <style scoped>
 .admin-orders {
   padding: 2rem;
-  background: linear-gradient(135deg, #1f1f47, #000);
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  color: #fff;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Header */
 .page-header {
   margin-bottom: 2rem;
 }
 
 .page-header h1 {
   font-size: 2rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(90deg, #00eaff, #00ff88);
-  -webkit-text-fill-color: transparent;
+  color: #333;
+  margin-bottom: 0.5rem;
 }
 
 .page-header p {
-  color: #e0e0e0;
-  margin: 0;
-  font-size: 1.1rem;
+  color: #666;
 }
 
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  padding: 1.5rem;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.3);
-  border-color: #00eaff;
-}
-
-.stat-content h3 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #00eaff;
-  margin: 0 0 0.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.stat-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0;
-  color: #fff;
-}
-
-.stat-icon {
-  font-size: 2rem;
-  opacity: 0.8;
-}
-
-/* Filters */
 .filters-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .search-box {
   position: relative;
   flex: 1;
-  max-width: 400px;
+  max-width: 300px;
 }
 
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   font-size: 1rem;
-  backdrop-filter: blur(10px);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #00eaff;
-  box-shadow: 0 0 0 2px rgba(0, 234, 255, 0.2);
 }
 
 .search-icon {
@@ -351,7 +263,7 @@ const deleteOrder = (order) => {
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: #999;
 }
 
 .filter-buttons {
@@ -362,32 +274,23 @@ const deleteOrder = (order) => {
 
 .filter-btn {
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: #e0e0e0;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.2s;
   font-size: 0.9rem;
 }
 
-.filter-btn:hover {
-  background: rgba(0, 255, 255, 0.12);
-  border-color: #00eaff;
-}
-
 .filter-btn.active {
-  background: rgba(0, 255, 255, 0.2);
-  border-color: #00eaff;
-  color: #00eaff;
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
 }
 
-/* Table */
 .orders-table-container {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
@@ -396,27 +299,26 @@ const deleteOrder = (order) => {
   border-collapse: collapse;
 }
 
+.orders-table thead {
+  background: #f8f9fa;
+}
+
 .orders-table th {
-  background: rgba(0, 0, 0, 0.3);
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-  color: #00eaff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #333;
+  border-bottom: 2px solid #e9ecef;
 }
 
 .orders-table td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.orders-table tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #e9ecef;
 }
 
 .order-id {
   font-weight: 600;
-  color: #00eaff;
+  color: #007bff;
 }
 
 .customer-info {
@@ -425,141 +327,116 @@ const deleteOrder = (order) => {
 }
 
 .customer-info strong {
-  color: #fff;
+  color: #333;
 }
 
 .customer-info span {
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-size: 0.9rem;
+  color: #666;
 }
 
-.date, .amount {
-  color: #e0e0e0;
+.date {
+  color: #666;
 }
 
 .amount {
   font-weight: 600;
-  color: #00ff88;
+  color: #333;
 }
 
-/* Status Badges */
 .status {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .status.pending {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.status.processing {
-  background: rgba(33, 150, 243, 0.2);
-  color: #2196f3;
-  border: 1px solid rgba(33, 150, 243, 0.3);
+  background: #fff3cd;
+  color: #856404;
 }
 
 .status.shipped {
-  background: rgba(156, 39, 176, 0.2);
-  color: #9c27b0;
-  border: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-.status.delivered {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  background: #d4edda;
+  color: #155724;
 }
 
 .status.cancelled {
-  background: rgba(244, 67, 54, 0.2);
-  color: #f44336;
-  border: 1px solid rgba(244, 67, 54, 0.3);
+  background: #f8d7da;
+  color: #721c24;
 }
 
-/* Actions */
 .actions {
   display: flex;
   gap: 0.5rem;
 }
 
 .action-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.5rem;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.2s;
   font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.action-btn.view:hover {
-  background: rgba(33, 150, 243, 0.3);
-  border-color: #2196f3;
+.action-btn.view {
+  background: #6c757d;
+  color: white;
 }
 
-.action-btn.edit:hover {
-  background: rgba(255, 193, 7, 0.3);
-  border-color: #ffc107;
+.action-btn.edit {
+  background: #ffc107;
+  color: white;
 }
 
-.action-btn.delete:hover {
-  background: rgba(244, 67, 54, 0.3);
-  border-color: #f44336;
+.action-btn.delete {
+  background: #dc3545;
+  color: white;
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
-  padding: 3rem;
-  color: #9ca3af;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .empty-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
-  opacity: 0.5;
 }
 
 .empty-state h3 {
-  color: #e0e0e0;
+  color: #333;
   margin-bottom: 0.5rem;
 }
 
-/* Responsive */
+.empty-state p {
+  color: #666;
+}
+
 @media (max-width: 768px) {
   .admin-orders {
     padding: 1rem;
   }
-
+  
   .filters-section {
     flex-direction: column;
     align-items: stretch;
   }
-
+  
   .search-box {
-    max-width: none;
+    max-width: 100%;
   }
-
-  .filter-buttons {
-    justify-content: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .orders-table-container {
-    overflow-x: auto;
-  }
-
+  
   .orders-table {
-    min-width: 800px;
+    display: block;
+    overflow-x: auto;
   }
 }
 </style>

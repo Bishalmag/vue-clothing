@@ -8,7 +8,7 @@
 
       <div class="text-content">
         <p>
-          Founded in 2024, <strong>FashionStore</strong> is dedicated to bringing you the latest trends without compromising on quality or comfort. We believe that style is a way to say who you are without having to speak.
+          Founded in 2025, <strong>FashionStore</strong> is dedicated to bringing you the latest trends without compromising on quality or comfort. We believe that style is a way to say who you are without having to speak.
         </p>
         <p>
           Our collections are curated for those who value aesthetics, sustainability, and affordability. From our design studio to your doorstep, we ensure every piece meets our high standards of craftsmanship.
@@ -17,7 +17,6 @@
     </div>
   </div>
 </template>
-
 <style scoped>
 .page-container {
   padding: 2rem;

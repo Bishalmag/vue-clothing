@@ -10,33 +10,16 @@
         <div class="contact-item">
           <div class="icon-box">📧</div>
           <h4>Email Us</h4>
-          <p>support@fashionstore.com</p>
+          <p>ghartimagarbishal87@gmail.com</p>
           <small>Response within 24 hours</small>
         </div>
 
         <div class="contact-item">
           <div class="icon-box">📞</div>
           <h4>Call Us</h4>
-          <p>+1 (800) 123-4567</p>
-          <small>Mon-Fri, 9am - 6pm EST</small>
+          <p>+9779843967328</p>
+          
         </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="faq-section">
-        <h3>Quick Actions</h3>
-        <ul>
-          <li>
-            <router-link to="/returns">How do I return an item?</router-link>
-          </li>
-          <li>
-            <router-link to="/orders">Where is my order?</router-link>
-          </li>
-          <li>
-            <router-link to="/settings">Change my password</router-link>
-          </li>
-        </ul>
       </div>
     </div>
   </div>
@@ -48,7 +31,6 @@
   max-width: 800px;
   margin: 0 auto;
 }
-
 .content-card {
   background: #fff;
   padding: 2.5rem;

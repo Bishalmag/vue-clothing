@@ -26,8 +26,7 @@
         <tr v-for="p in products" :key="p.id">
           <td class="text-left">{{ p.id }}</td>
           <td class="text-left">
-            <img v-if="p.picture" :src="resolvePicture(p.picture)" alt="pic" class="thumb" />
-            <span v-else class="no-thumb">—</span>
+            <img :src="resolvePicture(p.picture)" alt="pic" class="thumb" />
           </td>
           <td class="text-left">{{ p.name }}</td>
           <td class="text-left">{{ formatVariations(p.variations) }}</td>
@@ -60,11 +59,17 @@ const error = ref('')
 const deletingId = ref(null)
 const router = useRouter()
 
+// Base URL and fallback for missing images
+const BASE_URL = 'http://127.0.0.1:8000'
+const fallbackImage = 'https://via.placeholder.com/56x56?text=No+Image'
+
+// Resolve picture URL, handle null/fallback
 function resolvePicture(pic) {
-  if (!pic) return ''
-  return pic.startsWith('http') ? pic : `http://127.0.0.1:8000/storage/${pic}`
+  if (!pic) return fallbackImage
+  return pic.startsWith('http') ? pic : `${BASE_URL}/storage/products/${pic}`
 }
 
+// Fetch products from API
 async function fetchProducts() {
   loading.value = true
   error.value = ''
@@ -79,16 +84,19 @@ async function fetchProducts() {
   }
 }
 
+// Format price to $xx.xx
 function formatPrice(val) {
   if (val === null || val === undefined) return '—'
   return typeof val === 'number' ? `$${val.toFixed(2)}` : val
 }
 
+// Format variations as color (size:stock)
 function formatVariations(vars) {
   if (!vars || !vars.length) return '—'
   return vars.map(v => `${v.color} (${v.size}:${v.stock})`).join(', ')
 }
 
+// Navigation helpers
 function goToAdd() {
   router.push({ name: 'addproducts' })
 }
@@ -97,6 +105,7 @@ function editProduct(id) {
   router.push({ name: 'editproduct', params: { id } })
 }
 
+// Delete product
 async function deleteProduct(id) {
   if (!window.confirm('Are you sure you want to delete this product?')) return
   deletingId.value = id
@@ -111,23 +120,23 @@ async function deleteProduct(id) {
   }
 }
 
+// Fetch products on mount
 onMounted(fetchProducts)
 </script>
 
 <style scoped>
-/* Button height decreased by 40% */
 .btn {
-  padding: 4px 12px; /* Reduced from 8px 12px (40% height reduction) */
+  padding: 4px 12px;
   border-radius: 6px;
   border: 1px solid #d1d5db;
   background: #fff;
   cursor: pointer;
   font-weight: 600;
-  height: 28px; /* Added fixed height */
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem; /* Slightly smaller font */
+  font-size: 0.9rem;
 }
 
 .btn.primary {
@@ -137,9 +146,9 @@ onMounted(fetchProducts)
 }
 
 .btn.small {
-  padding: 3px 8px; /* Reduced from 6px 8px */
+  padding: 3px 8px;
   font-size: 0.85rem;
-  height: 24px; /* Smaller height for small buttons */
+  height: 24px;
 }
 
 .btn.danger {
@@ -148,7 +157,6 @@ onMounted(fetchProducts)
   border-color: #fca5a5;
 }
 
-/* List container */
 .list-container {
   max-width: 1200px;
   margin: 32px auto;
@@ -171,7 +179,6 @@ onMounted(fetchProducts)
   align-items: center;
 }
 
-/* Table styling with left-aligned content */
 .items-table {
   width: 100%;
   border-collapse: collapse;
@@ -183,31 +190,23 @@ onMounted(fetchProducts)
   padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
   color: #111827;
-  text-align: left; /* Force left alignment for all cells */
+  text-align: left;
 }
 
 .items-table th {
   border-bottom: 1px solid #e6e7ea;
   color: #374151;
   font-weight: 600;
-  text-align: left; /* Ensure headers are left-aligned too */
 }
 
-/* Specific left alignment classes */
 .text-left {
   text-align: left !important;
-  padding-left: 12px !important;
 }
 
-/* Reduce left padding to shift content left */
-.items-table td {
-  padding-left: 8px; /* Reduced from 12px */
-  padding-right: 8px; /* Reduced from 12px */
-}
-
+.items-table td,
 .items-table th {
-  padding-left: 8px; /* Reduced from 12px */
-  padding-right: 8px; /* Reduced from 12px */
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .thumb {
@@ -222,7 +221,7 @@ onMounted(fetchProducts)
 }
 
 .actions-col {
-  width: 180px; /* Reduced from 220px */
+  width: 180px;
 }
 
 .loading,
@@ -237,38 +236,37 @@ onMounted(fetchProducts)
   margin-bottom: 12px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .list-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .actions {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .btn {
     padding: 3px 10px;
     font-size: 0.85rem;
   }
-  
+
   .items-table {
     font-size: 0.9rem;
   }
-  
+
   .items-table td,
   .items-table th {
     padding: 6px 4px;
   }
-  
+
   .thumb {
     width: 40px;
     height: 40px;
   }
-  
+
   .actions-col {
     width: 140px;
   }

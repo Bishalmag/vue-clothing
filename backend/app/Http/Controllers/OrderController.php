@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Product_variation; // use existing model class name
+use App\Models\Product_variation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,12 +15,10 @@ class OrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }
-
-        $query = Order::with('items')->where('u_id', $user->id);
+        $query = Order::with(['items.product.category', 'items.variation'])
+            ->where('u_id', $user->id);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -28,22 +26,41 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(10);
 
+        $orders->getCollection()->transform(function ($order) {
+            $order->items->transform(function ($item) {
+                return [
+                    'id' => $item->order_item_id,
+                    'product_id' => $item->product_id,
+                    'variation_id' => $item->variation_id,
+                    'name' => $item->product->name,
+                    'category' => $item->product->category->name ?? '',
+                    'price' => $item->product->price,
+                    'quantity' => $item->quantity,
+                    'size' => $item->variation->size ?? null,
+                    'color' => $item->variation->color ?? null,
+                    'image' => $item->product->picture
+                        ? asset('storage/products/' . $item->product->picture)
+                        : asset('storage/products/placeholder.png'),
+                    'total_price' => $item->total_price,
+                ];
+            });
+            return $order;
+        });
+
         return response()->json($orders);
     }
 
     public function store(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
         $validated = $request->validate([
             'total_amount' => 'required|numeric|min:0',
             'status' => 'sometimes|integer|min:0|max:4',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.variation_id' => 'sometimes|nullable|integer', // optional but recommended
+            'items.*.variation_id' => 'sometimes|nullable|integer',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.total_price' => 'required|numeric|min:0',
         ]);
@@ -51,62 +68,41 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try {
-            // 1. Check stock for each item
             foreach ($validated['items'] as $item) {
-                // Prefer explicit variation_id if provided
-                if (!empty($item['variation_id'])) {
-                    $variation = Product_variation::find($item['variation_id']);
-                    if (!$variation) {
-                        throw new \Exception("Product variation (id {$item['variation_id']}) not found.");
-                    }
-                } else {
-                    // fallback: find a variation that belongs to the product (best-effort)
-                    $variation = Product_variation::where('product_id', $item['product_id'])->first();
-                    if (!$variation) {
-                        throw new \Exception("No product variation found for product ID {$item['product_id']}.");
-                    }
+                $variation = !empty($item['variation_id'])
+                    ? Product_variation::find($item['variation_id'])
+                    : Product_variation::where('product_id', $item['product_id'])->first();
+
+                if (!$variation) {
+                    throw new \Exception("Product variation not found for product ID {$item['product_id']}");
                 }
 
                 if ($item['quantity'] > $variation->stock) {
-                    throw new \Exception("Cannot order more than available stock for product/variation (requested {$item['quantity']}, available {$variation->stock}).");
+                    throw new \Exception("Requested quantity exceeds stock for variation ID {$variation->id}");
                 }
             }
 
-            // 2. Create order
             $order = Order::create([
                 'u_id' => $user->id,
                 'total_amount' => $validated['total_amount'],
                 'status' => $validated['status'] ?? 0,
             ]);
 
-            // 3. Create order items and reduce stock
             foreach ($validated['items'] as $item) {
-                // Use variation_id when available
-                $variationId = $item['variation_id'] ?? null;
-
-                // If variationId wasn't provided earlier, try to use the same fallback as before
-                if (!$variationId) {
-                    $variation = Product_variation::where('product_id', $item['product_id'])->first();
-                    $variationId = $variation ? $variation->variation_id : null;
-                } else {
-                    $variation = Product_variation::find($variationId);
-                }
+                $variation = !empty($item['variation_id'])
+                    ? Product_variation::find($item['variation_id'])
+                    : Product_variation::where('product_id', $item['product_id'])->first();
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
-                    'variation_id' => $variationId,
+                    'variation_id' => $variation->id ?? null,
                     'quantity' => $item['quantity'],
                     'total_price' => $item['total_price'],
                 ]);
 
-                // Reduce stock (only if we have a variation record)
                 if ($variation) {
                     $variation->stock -= $item['quantity'];
-                    if ($variation->stock < 0) {
-                        // additional safety: should not happen due to earlier checks
-                        throw new \Exception("Insufficient stock while saving order for variation id {$variation->variation_id}.");
-                    }
                     $variation->save();
                 }
             }
@@ -123,7 +119,6 @@ class OrderController extends Controller
     public function show(Order $order): JsonResponse
     {
         $user = Auth::user();
-
         if (!$user) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
@@ -132,20 +127,40 @@ class OrderController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        return response()->json($order->load('items'));
+        $order->load(['items.variation', 'items.product.category']);
+
+        $items = $order->items->map(function ($item) {
+            $imageUrl = $item->product->picture
+                ? asset('storage/products/' . basename($item->product->picture))
+                : asset('storage/products/placeholder.png');
+
+            return [
+                'id' => $item->order_item_id,
+                'order_id' => $item->order_id,
+                'product_id' => $item->product_id,
+                'variation_id' => $item->variation_id,
+                'name' => $item->product->name,
+                'category' => $item->product->category->name ?? '',
+                'price' => $item->product->price,
+                'quantity' => $item->quantity,
+                'size' => $item->variation->size ?? null,
+                'color' => $item->variation->color ?? null,
+                'image' => $imageUrl,
+                'total_price' => $item->total_price,
+            ];
+        })->toArray();
+
+        $orderArray = $order->toArray();
+        $orderArray['items'] = $items;
+
+        return response()->json($orderArray);
     }
 
     public function update(Request $request, Order $order): JsonResponse
     {
         $user = Auth::user();
-
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }
-
-        if ($order->u_id !== $user->id) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+        if ($order->u_id !== $user->id) return response()->json(['error' => 'Unauthorized'], 403);
 
         $validated = $request->validate([
             'total_amount' => 'sometimes|numeric|min:0',
@@ -153,24 +168,18 @@ class OrderController extends Controller
         ]);
 
         $order->update($validated);
-
         return response()->json($order);
     }
 
     public function destroy(Order $order): JsonResponse
     {
         $user = Auth::user();
-
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }
-
-        if ($order->u_id !== $user->id) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+        if ($order->u_id !== $user->id) return response()->json(['error' => 'Unauthorized'], 403);
 
         $order->delete();
-
         return response()->json(null, 204);
     }
+
+    
 }

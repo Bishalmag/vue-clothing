@@ -29,22 +29,18 @@
       <textarea v-model="form.description" placeholder="Description (optional)"></textarea>
 
       <div class="variations-section">
-  <h3>Variations</h3>
-  <div v-for="(v, index) in form.variations" :key="index" class="variation-row">
-    <input v-model="v.color" placeholder="Color" required />
-
-    <select v-model="v.size" required>
-      <option value="">-- Select Size --</option>
-      <option v-for="size in sizes" :key="size" :value="size">{{ size }}</option>
-    </select>
-
-    <input v-model.number="v.stock" type="number" placeholder="Stock" required />
-
-    <button type="button" class="btn small danger" @click="removeVariation(index)">Remove</button>
-  </div>
-  <button type="button" class="btn small" @click="addVariation">Add Variation</button>
-</div>
-
+        <h3>Variations</h3>
+        <div v-for="(v, index) in form.variations" :key="index" class="variation-row">
+          <input v-model="v.color" placeholder="Color" required />
+          <select v-model="v.size" required>
+            <option value="">-- Select Size --</option>
+            <option v-for="size in sizes" :key="size" :value="size">{{ size }}</option>
+          </select>
+          <input v-model.number="v.stock" type="number" placeholder="Stock" required />
+          <button type="button" class="btn small danger" @click="removeVariation(index)">Remove</button>
+        </div>
+        <button type="button" class="btn small" @click="addVariation">Add Variation</button>
+      </div>
 
       <div class="buttons">
         <button type="submit" class="btn primary" :disabled="saving">{{ saving ? 'Saving...' : 'Save Changes' }}</button>
@@ -67,12 +63,11 @@ import adminApi from '@/api/adminaxois'
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
-const sizes = ['S', 'M', 'L', 'XL',]
-
+const sizes = ['S', 'M', 'L', 'XL']
 
 const form = reactive({
   name: '',
-  price: null,
+  price: 0,
   category_id: '',
   description: '',
   picture: '',
@@ -90,12 +85,12 @@ const error = ref('')
 const pictureFile = ref(null)
 const previewUrl = ref(null)
 
-const resolvePicture = pic => pic?.startsWith('http') ? pic : `http://127.0.0.1:8000/storage/${pic}`
+const resolvePicture = pic => pic ? `http://127.0.0.1:8000/storage/products/${pic}` : null
 
 async function fetchCategories() {
   try {
     const res = await adminApi.get('/categories')
-    categories.value = Array.isArray(res.data) ? res.data : (res.data.data ?? [])
+    categories.value = Array.isArray(res.data) ? res.data : (res.data?.data ?? [])
   } catch {}
 }
 
@@ -106,12 +101,19 @@ async function fetchProduct() {
     const res = await adminApi.get(`/products/${id}`)
     const data = res.data?.data ?? res.data
     if (!data?.id) return router.replace({ name: 'products' })
+
     form.name = data.name || ''
-    form.price = data.price || null
+    form.price = parseFloat(data.price) || 0
     form.category_id = data.category_id || ''
     form.description = data.description || ''
     form.picture = data.picture || ''
-    form.variations = data.variations?.map(v => ({ ...v })) || []
+
+    form.variations = data.variations?.map(v => ({
+      color: v.color || '',
+      size: v.size || '',
+      stock: v.stock || 0
+    })) || []
+
     loaded.value = true
   } catch (err) {
     error.value = err.response?.data?.message || err.message || 'Failed to load product.'

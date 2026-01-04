@@ -116,7 +116,11 @@ const { addToCart } = useCart()
 const { toggleFavorite, isFavorite } = useFavorites()
 
 const formatPrice = v => (Number(v) || 0).toFixed(2)
-const resolvePicture = pic => !pic ? fallbackImage : /^https?:\/\//.test(pic) ? pic : `${BASE_URL}/storage/${pic}`
+const resolvePicture = pic => {
+  if (!pic) return fallbackImage
+  if (/^https?:\/\//.test(pic)) return pic
+  return `${BASE_URL}/storage/products/${pic}`
+}
 
 const fetchProducts = async () => {
   try {
@@ -125,7 +129,7 @@ const fetchProducts = async () => {
     products.value = payload.map(p => ({ 
       ...p, 
       price: Number(p.price) || 0, 
-      image: resolvePicture(p.picture), 
+      image: resolvePicture(p.picture || p.image), 
       category: p.category?.name || p.category || 'Uncategorized', 
       color: p.color || '' 
     }))
@@ -167,6 +171,7 @@ const handleToggleFavorite = toggleFavorite
 const openQuickView = p => quickViewProduct.value = p
 const closeQuickView = () => quickViewProduct.value = null
 </script>
+
 
 <style scoped>
 .homepage {

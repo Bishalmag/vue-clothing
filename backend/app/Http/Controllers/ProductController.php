@@ -41,8 +41,14 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('picture')) {
-            $validated['picture'] = $request->file('picture')->store('products', 'public');
-        }
+    $file = $request->file('picture');
+
+    $filename = $file->hashName(); // only filename
+    $file->storeAs('products', $filename, 'public');
+
+    $validated['picture'] = $filename;
+}
+
 
         $product = Products::create([
             'name' => $validated['name'],
@@ -85,11 +91,17 @@ class ProductController extends Controller
     ]);
 
     if ($request->hasFile('picture')) {
-        if ($product->picture) {
-            Storage::disk('public')->delete($product->picture);
-        }
-        $validated['picture'] = $request->file('picture')->store('products', 'public');
+    if ($product->picture) {
+        Storage::disk('public')->delete('products/' . $product->picture);
     }
+
+    $file = $request->file('picture');
+    $filename = $file->hashName();
+    $file->storeAs('products', $filename, 'public');
+
+    $validated['picture'] = $filename;
+}
+
 
     $product->update($validated);
 

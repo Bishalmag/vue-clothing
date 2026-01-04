@@ -92,38 +92,16 @@ const routes = [
     ]
   },
   {
-    path: '/orderhistory',
+    path: '/myorders',
     component: UserDashboard,
     children: [
       { 
         path: '', 
-        name: 'orderhistory', 
-        component: () => import('@/User/views/OrderHistory.vue')
+        name: 'myorders', 
+        component: () => import('@/User/views/MyOrders.vue')
       }
     ]
   },
-  {
-    path: '/orderdetails',
-    component: UserDashboard,
-    children: [
-      { 
-        path: '', 
-        name: 'orderdetails', 
-        component: () => import('@/User/views/OrderDetails.vue')
-      }
-    ]
-  },
-  {
-  path: '/myorder',
-  component: UserDashboard,
-  children: [
-    { 
-      path: '', 
-      name: 'myorder', 
-      component: () => import('@/User/views/MyOrder.vue') 
-    }
-  ]
-},
   {
     path: '/about',
     component: UserDashboard,

@@ -10,7 +10,7 @@ class Product_variation extends Model
 {
     use HasFactory;
     protected $table = 'product_variation';
-    protected $primaryKey = 'variation_id';
+    protected $primaryKey = 'id';
 
     protected $fillable = ['product_id', 'size', 'color', 'stock'];
 
