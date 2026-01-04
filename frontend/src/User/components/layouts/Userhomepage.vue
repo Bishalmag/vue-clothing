@@ -55,13 +55,7 @@
                 <button @click="handleToggleFavorite(product)" class="fav">
                   <span v-if="isFavorite(product.id)">♥</span><span v-else>♡</span>
                 </button>
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-
                 <button @click="handleAddToCart(product)" class="add">Add</button>
-
-=======
-                <button @click="handleAddToCart(product)" class="add">Add</button>
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
                 <button @click="openQuickView(product)" class="view">Quick view</button>
               </div>
             </div>
@@ -97,48 +91,20 @@
         </div>
       </div>
     </div>
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-
-    <aside class="cart-drawer" :class="{ open: cartOpen }">
-      <header>
-        <h4>Cart ({{ cartCount }})</h4>
-        <button @click="cartOpen = false">✕</button>
-      </header>
-      <div class="cart-body">
-        <p v-if="cartCount === 0" class="muted">Your cart is empty.</p>
-        <ul>
-          <li v-for="item in cart" :key="item.id">
-            {{ item.name }} — ${{ item.price.toFixed(2) }} x {{ item.quantity }}
-          </li>
-        </ul>
-      </div>
-      <footer>
-        <button class="checkout" :disabled="cartCount === 0" @click="checkout">Checkout</button>
-      </footer>
-    </aside>
-=======
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
   </div>
 </template>
 
 <script setup>
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-import { ref, computed } from 'vue'
-=======
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api/axios'
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
 import { useToast } from '@/composables/useToast'
 import { useCart } from '@/composables/useCart'
 import { useFavorites } from '@/composables/useFavorites'
 
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-=======
 const BASE_URL = 'http://localhost:8000'
 const fallbackImage = 'https://via.placeholder.com/400x400?text=No+Image'
 
 const products = ref([])
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
 const selectedCategory = ref('All')
 const sortBy = ref('featured')
 const page = ref(1)
@@ -146,30 +112,6 @@ const perPage = 6
 const quickViewProduct = ref(null)
 
 const { showToast } = useToast()
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-const { addToCart, cart } = useCart()
-const { toggleFavorite, isFavorite } = useFavorites()
-const cartCount = computed(() => cart.value.length)
-
-const categories = ['Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Shoes']
-
-const products = ref([
-  { id: 1, name: 'Classic White Tee', category: 'Tops', color: 'White', price: 19.99, image: 'https://picsum.photos/400/400?random=1', description: 'A comfortable classic tee for everyday wear.' },
-  { id: 2, name: 'Denim Jacket', category: 'Outerwear', color: 'Blue', price: 89.0, image: 'https://picsum.photos/400/400?random=2', description: 'Stylish denim jacket with a relaxed fit.' },
-  { id: 3, name: 'Cargo Pants', category: 'Bottoms', color: 'Khaki', price: 49.5, image: 'https://picsum.photos/400/400?random=3', description: 'Utility-inspired cargo pants with lots of pockets.' },
-  { id: 4, name: 'Leather Sneakers', category: 'Shoes', color: 'Black', price: 120.0, image: 'https://picsum.photos/400/400?random=4', description: 'Durable leather sneakers built for comfort.' },
-  { id: 5, name: 'Chunky Scarf', category: 'Accessories', color: 'Grey', price: 29.0, image: 'https://picsum.photos/400/400?random=5', description: 'Warm scarf knitted from soft yarn.' },
-  { id: 6, name: 'Striped Shirt', category: 'Tops', color: 'Navy', price: 35.25, image: 'https://picsum.photos/400/400?random=6', description: 'Casual striped shirt with a slim cut.' },
-  { id: 7, name: 'Trench Coat', category: 'Outerwear', color: 'Beige', price: 159.0, image: 'https://picsum.photos/400/400?random=7', description: 'Classic trench for transitional seasons.' },
-  { id: 8, name: 'Chino Shorts', category: 'Bottoms', color: 'Olive', price: 29.99, image: 'https://picsum.photos/400/400?random=8', description: 'Lightweight cotton shorts for warm days.' },
-  { id: 9, name: 'Slip-On Loafers', category: 'Shoes', color: 'Tan', price: 79.0, image: 'https://picsum.photos/400/400?random=9', description: 'Smart casual loafers to elevate your outfit.' }
-])
-
-const filteredProducts = computed(() => {
-  return products.value.filter(p => 
-    selectedCategory.value === 'All' ? true : p.category === selectedCategory.value
-  )
-=======
 const { addToCart } = useCart()
 const { toggleFavorite, isFavorite } = useFavorites()
 
@@ -196,7 +138,6 @@ onMounted(fetchProducts)
 
 const categories = computed(() => {
   return [...new Set(products.value.map(p => p.category).filter(Boolean))]
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
 })
 
 const filteredProducts = computed(() =>
@@ -220,41 +161,11 @@ const paginated = computed(() => {
   return sorted.value.slice(start, start+perPage)
 })
 
-<<<<<<< HEAD:src/User/components/layouts/Userhomepage.vue
-function selectCategory(cat) {
-  selectedCategory.value = cat
-  page.value = 1
-}
-
-function handleAddToCart(product) {
-  addToCart(product)
-  showToast(`"${product.name}" added to cart!`, 'success')
-}
-
-function handleToggleFavorite(product) {
-  toggleFavorite(product)
-}
-
-function openQuickView(product) {
-  quickViewProduct.value = product
-}
-
-function closeQuickView() {
-  quickViewProduct.value = null
-}
-
-function checkout() {
-  if (cartCount.value === 0) return
-  showToast('Order placed successfully!', 'success')
-  cartOpen.value = false
-}
-=======
 const selectCategory = cat => { selectedCategory.value = cat; page.value = 1 }
 const handleAddToCart = p => { addToCart({ ...p, price: Number(p.price) }); showToast?.(`"${p.name}" added to cart!`, 'success') }
 const handleToggleFavorite = toggleFavorite
 const openQuickView = p => quickViewProduct.value = p
 const closeQuickView = () => quickViewProduct.value = null
->>>>>>> secondary:frontend/src/User/components/layouts/Userhomepage.vue
 </script>
 
 <style scoped>

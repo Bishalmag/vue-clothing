@@ -3,33 +3,12 @@ import { ref, onMounted } from 'vue'
 import Usersidebar from './layouts/Usersidebar.vue'
 import Usernavbar from './layouts/Usernavbar.vue'
 import Userfooter from './layouts/Userfooter.vue'
-<<<<<<< HEAD:src/User/components/UserDashboard.vue
-=======
 import { toasts, fetchUser } from '@/composables/useToast' 
->>>>>>> secondary:frontend/src/User/components/UserDashboard.vue
 
 
 const isAuthenticated = ref(true)
-const toasts = ref([])
-
-// ✅ Define toast function FIRST
-const showToast = (message, type = 'info', duration = 3000) => {
-  const id = Date.now()
-  toasts.value.push({ id, message, type })
-
-  setTimeout(() => {
-    toasts.value = toasts.value.filter(toast => toast.id !== id)
-  }, duration)
-}
 
 onMounted(() => {
-<<<<<<< HEAD:src/User/components/UserDashboard.vue
-  isAuthenticated.value = true
-  localStorage.setItem('user', '{"name":"Test User"}')
-  showToast('Welcome back, Test User!', 'success') // ✅ Now this will work
-})
-window.showToast = showToast
-=======
   const token = localStorage.getItem('auth_token')
   isAuthenticated.value = !!token
   
@@ -39,7 +18,6 @@ window.showToast = showToast
  
 })
 
->>>>>>> secondary:frontend/src/User/components/UserDashboard.vue
 </script>
 
 <template>
