@@ -83,22 +83,12 @@ const fetchOrders = async () => {
 
 const formatPrice = (v) => (Number(v) || 0).toFixed(2)
 const formatDate = (date) => new Date(date).toLocaleDateString()
-const getStatusText = (status) => ({0:'Pending',1:'Processing',2:'Completed',3:'Cancelled'}[status] || 'Pending')
+const getStatusText = (status) => ({0:'Pending',1:'Shipped',2:'Cancelled',}[status] || 'Pending')
 const goShopping = () => router.push('/')
 const openDetails = (order) => detailsOrder.value = order
 const closeDetails = () => detailsOrder.value = null
 
 onMounted(fetchOrders)
-
-// const getStatusText = (status) => {
-//   const statusMap = {0:'Pending',1:'Shipped',2:'Cancelled'}
-//   return statusMap[status] || 'Pending'
-// }
-
-// const getStatusClass = (status) => {
-//   const classMap = {0:'pending',1:'shipped',2:'cancelled'}
-//   return classMap[status] || 'pending'
-// }
 </script>
 
 <style scoped>
